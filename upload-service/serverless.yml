@@ -1,0 +1,70 @@
+service: upload-service
+frameworkVersion: '3'
+
+package:
+  exclude:
+    - node_modules/**
+    - .idea/**
+    - .requirements/**
+    - env/**
+    - README.md
+    - package.json
+    - package-lock.json
+    - requirements.txt
+
+custom:
+  app_name: cat-detector
+  region: eu-west-1
+  stage: test
+  stack_name: ${self:custom.app_name}-${self:custom.stage}
+  s3_bucket_name: ${ssm:/dev/cat-detector/bucket/name}
+  s3_bucket_arn: ${ssm:/dev/cat-detector/bucket/arn}
+  apigw_id: ${ssm:/dev/cat-detector/apigw/id}
+  default_ttl: 300
+
+provider:
+  name: aws
+  region: ${self:custom.region}
+  runtime: python3.9
+  architecture: arm64
+  httpApi:
+    id: ${self:custom.apigw_id}
+  tracing:
+    apiGateway: true
+    lambda: true
+  layers:
+    - arn:aws:lambda:${self:custom.region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:14
+  iam:
+    role:
+      name: ${self:custom.app_name}-${self:custom.stage}-upload
+      tags:
+        Name: ${self:custom.app_name}-${self:custom.stage}-upload
+        Application_Name: "cat-detector"
+        Stack: "security"
+        Creator: "serverless"
+        Environment: "dev"
+      managedPolicies:
+        - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource: ${self:custom.s3_bucket_arn}/*
+functions:
+  upload:
+    handler: handler.upload
+    environment:
+      S3_BUCKET_NAME: ${self:custom.s3_bucket_name}
+      DEFAULT_TTL: ${self:custom.default_ttl}
+      POWERTOOLS_SERVICE_NAME: ${self:custom.app_name}
+      POWERTOOLS_TRACER_CAPTURE_RESPONSE: true
+      POWERTOOLS_TRACER_CAPTURE_ERROR: true
+      POWERTOOLS_LOGGER_LOG_EVENT: true
+      LOG_LEVEL: DEBUG
+    events:
+      - httpApi:
+          path: /upload
+          method: get
+
+plugins:
+  - serverless-python-requirements

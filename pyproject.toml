@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "cat-detector"
+version = "0.1.0"
+description = "Detects cats in a picture"
+authors = ["David Drugeon-Hamon"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydantic = "^1.10.2"
+
+[tool.poetry.group.dev.dependencies]
+boto3 = "^1.26.10"
+aws-lambda-powertools = "^2.2.0"
+pytest = "^7.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
