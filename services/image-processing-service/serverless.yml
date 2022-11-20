@@ -1,4 +1,4 @@
-service: upload-service
+service: image-processing-service
 frameworkVersion: '3'
 
 package:
@@ -19,7 +19,8 @@ custom:
   stack_name: ${self:custom.app_name}-${self:custom.stage}
   s3_bucket_name: ${ssm:/dev/cat-detector/bucket/name}
   s3_bucket_arn: ${ssm:/dev/cat-detector/bucket/arn}
-  apigw_id: ${ssm:/dev/cat-detector/apigw/id}
+  dynamodb_table_name: ${ssm:/dev/cat-detector/dynamodb/images/name}
+  dynamodb_table_arn: ${ssm:/dev/cat-detector/dynamodb/images/arn}
   default_ttl: 300
 
 provider:
@@ -27,18 +28,15 @@ provider:
   region: ${self:custom.region}
   runtime: python3.9
   architecture: arm64
-  httpApi:
-    id: ${self:custom.apigw_id}
   tracing:
-    apiGateway: true
     lambda: true
   layers:
     - arn:aws:lambda:${self:custom.region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:14
   iam:
     role:
-      name: ${self:custom.app_name}-${self:custom.stage}-upload
+      name: ${self:custom.app_name}-${self:custom.stage}-image-processing
       tags:
-        Name: ${self:custom.app_name}-${self:custom.stage}-upload
+        Name: ${self:custom.app_name}-${self:custom.stage}-image-processing
         Application_Name: "cat-detector"
         Stack: "security"
         Creator: "serverless"
@@ -46,25 +44,34 @@ provider:
       managedPolicies:
         - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
       statements:
+        - Effect: "Allow"
+          Action:
+            - "rekognition:*"
+          Resource: "*"
         - Effect: Allow
           Action:
-            - s3:PutObject
+            - s3:GetObject
           Resource: ${self:custom.s3_bucket_arn}/*
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+          Resource: ${self:custom.dynamodb_table_arn}
 functions:
-  upload:
-    handler: src/handler.upload
+  image-processing:
+    handler: src/handler.process
     environment:
       S3_BUCKET_NAME: ${self:custom.s3_bucket_name}
-      DEFAULT_TTL: ${self:custom.default_ttl}
+      DYNAMODB_TABLE_NAME: ${self:custom.dynamodb_table_name}
       POWERTOOLS_SERVICE_NAME: ${self:custom.app_name}
       POWERTOOLS_TRACER_CAPTURE_RESPONSE: true
       POWERTOOLS_TRACER_CAPTURE_ERROR: true
       POWERTOOLS_LOGGER_LOG_EVENT: true
       LOG_LEVEL: DEBUG
     events:
-      - httpApi:
-          path: /upload
-          method: get
-
+      - s3:
+          bucket: ${self:custom.s3_bucket_name}
+          event: s3:ObjectCreated:*
+          existing: true
 plugins:
   - serverless-python-requirements
