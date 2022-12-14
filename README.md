@@ -1,14 +1,50 @@
-<!--
-title: 'AWS Simple HTTP Endpoint example in Python'
-description: 'This template demonstrates how to make a simple HTTP API with Python running on AWS Lambda and API Gateway using the Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: python
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
+
+# ⚡ Cat Detector 🐱
+[![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+![Tests](https://github.com/kfrawee/serverless-image-recognition/workflows/Unit-Tests/badge.svg)
+
+
+> This project demonstrates how to add observability to a fully serverless application using the aws-lambda-powertools python library. This article on the wescale blog allows to understand how to use this library.
+
+## Overview
+This project exposes an API to upload an image to an S3 bucket. The AWS Rekognition service then analyzes this image to produce labels that will be stored in a DynamoDB table.
+The user can then query the database to find out if a cat has been detected on the uploaded image.
+
+**It is an improved version of the project [image-recognition-api](https://github.com/kfrawee/image-recognition-api) by**
+- Applying code best practice.
+- Applying better project structure.
+- Applying better logging and error handling.
+
+<br>
+<p align="center">
+<img src="./images/01_architecture_overview.png" title="Architecture diagram" alt="Architecture diagram" width=100%/>
+<b>Architecture diagram</b>
+</p>
+
+## Authors
+
+- [@ddrugeon](https://www.github.com/ddrugeon)
+
+
+## Installation
+
+Install my-project with npm
+
+```bash
+  npm install my-project
+  cd my-project
+```
+
+## Documentation
+
+[Documentation](https://linktodocumentation)
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
 
 # Serverless Framework Python HTTP API on AWS
 

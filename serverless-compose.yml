@@ -3,3 +3,5 @@ services:
     path: services/image-processing-service
   upload-service:
     path: services/upload-service
+  query-service:
+    path: services/query-service
